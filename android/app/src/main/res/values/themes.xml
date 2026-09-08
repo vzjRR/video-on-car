@@ -1,0 +1,3 @@
+<resources>
+    <style name="Theme.IptvCar" parent="android:Theme.Material.NoActionBar" />
+</resources>

@@ -1,0 +1,30 @@
+{
+  "info": {
+    "name": "Example Series",
+    "cover": "https://example.test/posters/series1.jpg",
+    "plot": "A test series used for parser fixtures.",
+    "genre": "Drama",
+    "rating": "8.1"
+  },
+  "seasons": [
+    { "season_number": 1 }
+  ],
+  "episodes": {
+    "1": [
+      {
+        "id": "20001",
+        "episode_num": 1,
+        "title": "Pilot",
+        "container_extension": "mp4",
+        "info": { "duration_secs": 1500, "plot": "The one that starts it all." }
+      },
+      {
+        "id": "20002",
+        "episode_num": 2,
+        "title": "Second Episode",
+        "container_extension": "mp4",
+        "info": { "duration_secs": 1450, "plot": null }
+      }
+    ]
+  }
+}

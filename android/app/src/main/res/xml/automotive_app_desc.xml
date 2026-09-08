@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Declares Android Automotive OS surfaces this app provides. `media` covers
+  the Car App Library / MediaLibraryService browsing surface, which is
+  fully supported today. `video` opts into the 2026 parked-video app
+  category (docs/RESEARCH.md fact 7) — actually reaching users still
+  requires clearing Google Play's car-app quality review
+  (docs/PLATFORM_LIMITATIONS.md item 2).
+-->
+<automotiveApp>
+    <uses name="media" />
+    <uses name="video" />
+</automotiveApp>

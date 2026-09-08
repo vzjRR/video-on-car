@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:name=".IptvCarApplication"
+        android:allowBackup="false"
+        android:label="@string/app_name"
+        android:icon="@android:drawable/sym_def_app_icon"
+        android:theme="@style/Theme.IptvCar"
+        tools:targetApi="34">
+
+        <!--
+          Declares this app as a parked video app for Android Automotive OS
+          per the 2026 Android for Cars video-app surface. Listing under
+          this category on Google Play still requires passing Google's
+          car-app quality review — see docs/PLATFORM_LIMITATIONS.md item 2.
+          This manifest flag alone does not unlock the surface.
+        -->
+        <meta-data android:name="com.android.automotive" android:resource="@xml/automotive_app_desc" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".player.PlayerActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:launchMode="singleTop" />
+
+        <!--
+          Android for Cars App Library entry point: officially supported
+          browsing UI for Android Auto / Android Automotive OS. Provides
+          the vehicle-facing category -> list -> item navigation for
+          Live TV, Movies, and Series (see docs/ARCHITECTURE.md).
+        -->
+        <service
+            android:name=".carapp.IptvCarAppService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.car.app.CarAppService" />
+                <category android:name="androidx.car.app.category.MEDIA" />
+            </intent-filter>
+            <meta-data
+                android:name="androidx.car.app.minCarApiLevel"
+                android:value="1" />
+        </service>
+
+        <!--
+          MediaLibraryService: the standard Android Auto/Automotive media
+          browsing surface (categories -> lists -> playback), independent
+          of whichever car-app-library UI is also present. Many head
+          units/launchers prefer this route for media-type apps.
+        -->
+        <service
+            android:name=".media.IptvMediaLibraryService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaLibraryService" />
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+
+    </application>
+</manifest>

@@ -1,0 +1,22 @@
+[
+  {
+    "num": 1,
+    "name": "Example Movie One",
+    "stream_id": 1001,
+    "stream_icon": "https://example.test/posters/1001.jpg",
+    "rating": "7.5",
+    "category_id": "10",
+    "container_extension": "mp4",
+    "added": "1700000000"
+  },
+  {
+    "num": 2,
+    "name": "Example Movie Two (2023)",
+    "stream_id": 1002,
+    "stream_icon": null,
+    "rating": null,
+    "category_id": "10",
+    "container_extension": "mkv",
+    "added": "1700000100"
+  }
+]
