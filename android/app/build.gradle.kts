@@ -1,6 +1,20 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+}
+
+// Optional local-only quickstart seed: android/app/seed.properties is
+// gitignored and never committed (see docs/PLATFORM_LIMITATIONS.md /
+// Phase 3 — credentials must never land in source control). When present,
+// its values are baked into this build only, so the app can seed one
+// provider on first launch instead of requiring manual Settings entry.
+val seedProperties = Properties().apply {
+    val seedFile = rootProject.file("app/seed.properties")
+    if (seedFile.exists()) {
+        seedFile.inputStream().use { load(it) }
+    }
 }
 
 android {
@@ -13,10 +27,16 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0"
+
+        buildConfigField("String", "SEED_XTREAM_URL", "\"${seedProperties.getProperty("xtreamUrl", "")}\"")
+        buildConfigField("String", "SEED_XTREAM_USER", "\"${seedProperties.getProperty("xtreamUser", "")}\"")
+        buildConfigField("String", "SEED_XTREAM_PASS", "\"${seedProperties.getProperty("xtreamPass", "")}\"")
+        buildConfigField("String", "SEED_DISPLAY_NAME", "\"${seedProperties.getProperty("displayName", "")}\"")
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
