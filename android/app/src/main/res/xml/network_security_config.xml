@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  IPTV/Xtream Codes panels are commonly served over plain HTTP by design
+  (this app's own test provider is http://, not https://), and the whole
+  point of this app is connecting to whatever server URL the user supplies
+  — so cleartext can't be locked down to a fixed allowlist of domains the
+  way a normal app would. Without this, Android 9+ silently blocks every
+  request to an http:// provider (NetworkSecurityPolicy default since API
+  28), which is exactly the "failed to load" bug this file fixes.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
