@@ -10,6 +10,9 @@ import androidx.compose.ui.unit.dp
 import com.iptvcar.app.IptvCarApplication
 import com.iptvcar.app.PlaybackLauncher
 import com.iptvcar.core.model.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private enum class BrowseLevel { CATEGORIES, ITEMS, SERIES_DETAIL }
 
@@ -18,13 +21,19 @@ fun LiveScreen(app: IptvCarApplication, onPlay: PlaybackLauncher) {
     val provider = app.providerRepository.listProviders().firstOrNull()
     if (provider == null) { NoProviderMessage(); return }
 
+    val scope = rememberCoroutineScope()
     var level by remember { mutableStateOf(BrowseLevel.CATEGORIES) }
     var categories by remember { mutableStateOf<List<Category>>(emptyList()) }
     var channels by remember { mutableStateOf<List<LiveChannel>>(emptyList()) }
     var error by remember { mutableStateOf<String?>(null) }
 
+    // All network calls below run on Dispatchers.IO: Android throws
+    // NetworkOnMainThreadException (with no message, hence the confusing
+    // "...: null" errors) if a blocking OkHttp call executes on the UI
+    // thread — Compose's LaunchedEffect/onClick run there by default.
     LaunchedEffect(provider.id) {
-        runCatching { categories = app.providerRepository.loadLiveCategories(provider) }
+        withContext(Dispatchers.IO) { runCatching { app.providerRepository.loadLiveCategories(provider) } }
+            .onSuccess { categories = it }
             .onFailure { error = "Failed to load live categories: ${it.message}" }
     }
 
@@ -35,9 +44,11 @@ fun LiveScreen(app: IptvCarApplication, onPlay: PlaybackLauncher) {
                 level == BrowseLevel.CATEGORIES -> LazyColumn {
                     items(categories) { category ->
                         ListRow(category.name) {
-                            runCatching { channels = app.providerRepository.loadLiveChannels(provider, category.id) }
-                                .onFailure { error = "Failed to load channels: ${it.message}" }
-                            level = BrowseLevel.ITEMS
+                            scope.launch {
+                                withContext(Dispatchers.IO) { runCatching { app.providerRepository.loadLiveChannels(provider, category.id) } }
+                                    .onSuccess { channels = it; level = BrowseLevel.ITEMS }
+                                    .onFailure { error = "Failed to load channels: ${it.message}" }
+                            }
                         }
                     }
                 }
@@ -58,13 +69,15 @@ fun MoviesScreen(app: IptvCarApplication, onPlay: PlaybackLauncher) {
     val provider = app.providerRepository.listProviders().firstOrNull()
     if (provider == null) { NoProviderMessage(); return }
 
+    val scope = rememberCoroutineScope()
     var level by remember { mutableStateOf(BrowseLevel.CATEGORIES) }
     var categories by remember { mutableStateOf<List<Category>>(emptyList()) }
     var movies by remember { mutableStateOf<List<Movie>>(emptyList()) }
     var error by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(provider.id) {
-        runCatching { categories = app.providerRepository.loadMovieCategories(provider) }
+        withContext(Dispatchers.IO) { runCatching { app.providerRepository.loadMovieCategories(provider) } }
+            .onSuccess { categories = it }
             .onFailure { error = "Failed to load movie categories: ${it.message}" }
     }
 
@@ -75,9 +88,11 @@ fun MoviesScreen(app: IptvCarApplication, onPlay: PlaybackLauncher) {
                 level == BrowseLevel.CATEGORIES -> LazyColumn {
                     items(categories) { category ->
                         ListRow(category.name) {
-                            runCatching { movies = app.providerRepository.loadMovies(provider, category.id) }
-                                .onFailure { error = "Failed to load movies: ${it.message}" }
-                            level = BrowseLevel.ITEMS
+                            scope.launch {
+                                withContext(Dispatchers.IO) { runCatching { app.providerRepository.loadMovies(provider, category.id) } }
+                                    .onSuccess { movies = it; level = BrowseLevel.ITEMS }
+                                    .onFailure { error = "Failed to load movies: ${it.message}" }
+                            }
                         }
                     }
                 }
@@ -99,6 +114,7 @@ fun SeriesScreen(app: IptvCarApplication, onPlay: PlaybackLauncher) {
     val provider = app.providerRepository.listProviders().firstOrNull()
     if (provider == null) { NoProviderMessage(); return }
 
+    val scope = rememberCoroutineScope()
     var level by remember { mutableStateOf(BrowseLevel.CATEGORIES) }
     var categories by remember { mutableStateOf<List<Category>>(emptyList()) }
     var seriesList by remember { mutableStateOf<List<Series>>(emptyList()) }
@@ -106,7 +122,8 @@ fun SeriesScreen(app: IptvCarApplication, onPlay: PlaybackLauncher) {
     var error by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(provider.id) {
-        runCatching { categories = app.providerRepository.loadSeriesCategories(provider) }
+        withContext(Dispatchers.IO) { runCatching { app.providerRepository.loadSeriesCategories(provider) } }
+            .onSuccess { categories = it }
             .onFailure { error = "Failed to load series categories: ${it.message}" }
     }
 
@@ -130,17 +147,22 @@ fun SeriesScreen(app: IptvCarApplication, onPlay: PlaybackLauncher) {
                 level == BrowseLevel.CATEGORIES -> LazyColumn {
                     items(categories) { category ->
                         ListRow(category.name) {
-                            runCatching { seriesList = app.providerRepository.loadSeries(provider, category.id) }
-                                .onFailure { error = "Failed to load series: ${it.message}" }
-                            level = BrowseLevel.ITEMS
+                            scope.launch {
+                                withContext(Dispatchers.IO) { runCatching { app.providerRepository.loadSeries(provider, category.id) } }
+                                    .onSuccess { seriesList = it; level = BrowseLevel.ITEMS }
+                                    .onFailure { error = "Failed to load series: ${it.message}" }
+                            }
                         }
                     }
                 }
                 else -> LazyColumn {
                     items(seriesList) { series ->
                         ListRow(series.title) {
-                            runCatching { selectedSeries = app.providerRepository.loadSeriesDetail(provider, series) }
-                                .onFailure { error = "Failed to load series detail: ${it.message}" }
+                            scope.launch {
+                                withContext(Dispatchers.IO) { runCatching { app.providerRepository.loadSeriesDetail(provider, series) } }
+                                    .onSuccess { selectedSeries = it }
+                                    .onFailure { error = "Failed to load series detail: ${it.message}" }
+                            }
                         }
                     }
                 }
